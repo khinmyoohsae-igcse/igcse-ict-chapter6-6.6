@@ -327,7 +327,7 @@
                     { text: "An instruction to a bank allowing a third-party organization to withdraw variable amounts of money from an account when payments are due", isCorrect: true, rationale: "Direct debits automate variable bill payments (like utility or phone bills) where amounts change monthly." },
                     { text: "A debit card used for buying groceries directly at supermarket tills", isCorrect: false, rationale: "This describes point-of-sale debit card purchases, not direct debit billing instructions." },
                     { text: "A physical cash withdrawal made at an ATM", isCorrect: false, rationale: "This is cash withdrawal." },
-                    { text: "A fixed monthly transfer amount", isCorrect: true.split()[0] === 'false' && true, rationale: "Fixed amounts describe standing orders; direct debits handle variable amounts." }
+                    { text: "An automatic fixed monthly payment transfer", isCorrect: false, rationale: "Fixed amounts describe standing orders; direct debits handle variable amounts." }
                 ]
             },
             {
@@ -454,6 +454,19 @@
         const resultsContainer = document.getElementById("results-container");
         const finalScore = document.getElementById("final-score");
 
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Shuffle questions order on load
+        shuffleArray(questions);
+
         function loadQuestion() {
             answered = false;
             feedbackBox.classList.add("hidden");
@@ -465,7 +478,8 @@
             questionBox.textContent = q.question;
 
             // Shuffle options array randomly so correct answer is not always first
-            let shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            let shuffledOptions = [...q.options];
+            shuffleArray(shuffledOptions);
 
             optionsContainer.innerHTML = "";
             shuffledOptions.forEach((opt) => {
@@ -497,10 +511,11 @@
                 score++;
                 scoreDisplay.textContent = `Score: ${score}`;
                 feedbackBox.className = "feedback-box correct-feedback";
-                feedbackBox.innerHTML = `<strong>Correct!</strong> ${selectedOpt.rationale}`;
+                feedbackBox.innerHTML = `<strong>Correct! 🎉</strong> ${selectedOpt.rationale}`;
             } else {
                 feedbackBox.className = "feedback-box incorrect-feedback";
-                feedbackBox.innerHTML = `<strong>Incorrect.</strong> ${selectedOpt.rationale}`;
+                const correctOpt = questions[currentQuestionIndex].options.find(o => o.isCorrect);
+                feedbackBox.innerHTML = `<strong>Incorrect.</strong> ${selectedOpt.rationale}<br><br><em>Correct answer:</em> ${correctOpt.text}`;
             }
 
             if (currentQuestionIndex < questions.length - 1) {
@@ -525,6 +540,7 @@
         function restartQuiz() {
             currentQuestionIndex = 0;
             score = 0;
+            shuffleArray(questions);
             resultsContainer.classList.add("hidden");
             quizContainer.classList.remove("hidden");
             loadQuestion();
